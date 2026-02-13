@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  role       String   
+  department String?
+  events     Event[]
+  AuditLog   AuditLog[]
+}
+
+model Event {
+  id              String   @id @default(uuid())
+  title           String
+  description     String?
+  department      String
+  date            String
+  duration        String
+  participants    Int
+  venueId         String
+  venueName       String
+  status          String   
+  coordinatorId   String
+  coordinator     User     @relation(fields: [coordinatorId], references: [id])
+  createdAt       DateTime @default(now())
+  rejectionReason String?
+  resources       Allocation[]
+  timeline        AuditLog[]
+}
+
+model Venue {
+  id         String   @id @default(uuid())
+  name       String
+  type       String
+  capacity   Int
+  state      String   @default("Available")
+  dept       String?
+}
+
+model Resource {
+  id          String   @id @default(uuid())
+  name        String
+  type        String
+  total       Int
+  available   Int
+  allocations Allocation[]
+}
+
+model Allocation {
+  id         String   @id @default(uuid())
+  eventId    String
+  event      Event    @relation(fields: [eventId], references: [id])
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id])
+  quantity   Int
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  timestamp DateTime @default(now())
+  note      String?
+  reason    String?
+}
